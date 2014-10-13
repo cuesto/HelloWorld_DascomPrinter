@@ -250,11 +250,9 @@ namespace HelloWorld_DascomPrinter
                 desc[0] = string.Format("{0:000000.00}", _desc);
                 desc = desc[0].Split('.');
 
-                descuento = "q-" + desc[0] + desc[1];
+                descuento = "q*" + desc[0] + desc[1];
 
                 bool od = _tfhka.SendCmd(descuento);
-
-
             }
         }
     }
