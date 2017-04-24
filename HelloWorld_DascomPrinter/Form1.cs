@@ -23,12 +23,7 @@ namespace HelloWorld_DascomPrinter
             _tfhka = new Tfhka();
             puerto = "COM3";
             lbaudios = 9600;
-
-            /* Prueba impresión automática */
-            AbrirDocumentoTFHKA();
-            AgregarArticuloRFHKA();
-            AplicarPago();
-            CerrarDocumentoTFHKA();
+            
         }
 
         private void button6_Click(object sender, EventArgs e)
@@ -59,10 +54,11 @@ namespace HelloWorld_DascomPrinter
 
                     string ncf = "1234512345123455432"; // - ("F" + NCF)
                     //string ncfa; //NCFAfectado - ("iF0" + NCFA)
-                    string rnc = "40220097683"; //RNC - ("iR0" + RNC)
+                    string rnc = "40220097679"; //RNC - ("iR0" + RNC)
                     string rs = "stark industries"; //RS - ("iS0" + RS)
 
                     _tfhka.SendCmd("F" + ncf);
+                    //_tfhka.SendCmd("iF0" + ncf);
                     _tfhka.SendCmd("iR0" + rnc);
                     _tfhka.SendCmd("iS0" + rs);
                     a = _tfhka.SendCmd("/0");
@@ -168,6 +164,11 @@ namespace HelloWorld_DascomPrinter
 
         private void button11_Click(object sender, EventArgs e)
         {
+            CancelarDocumento();
+        }
+
+        private void CancelarDocumento()
+        {
             if (_tfhka.StatusPort)
                 _tfhka.CloseFpCtrl();
 
@@ -180,6 +181,11 @@ namespace HelloWorld_DascomPrinter
 
         private void button12_Click(object sender, EventArgs e)
         {
+            ImprimirCierreZ();
+        }
+
+        private void ImprimirCierreZ()
+        {
             if (_tfhka.StatusPort)
                 _tfhka.CloseFpCtrl();
 
@@ -190,6 +196,11 @@ namespace HelloWorld_DascomPrinter
         }
 
         private void button13_Click(object sender, EventArgs e)
+        {
+            AplicarDescuento();
+        }
+
+        private void AplicarDescuento()
         {
             if (_tfhka.StatusPort)
                 _tfhka.CloseFpCtrl();
@@ -208,6 +219,15 @@ namespace HelloWorld_DascomPrinter
 
                 bool od = _tfhka.SendCmd(descuento);
             }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            /* Prueba impresión automática */
+            AbrirDocumentoTFHKA();
+            AgregarArticuloRFHKA();
+            AplicarPago();
+            CerrarDocumentoTFHKA();
         }
     }
 }
