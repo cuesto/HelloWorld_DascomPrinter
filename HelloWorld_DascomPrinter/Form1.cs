@@ -3,7 +3,6 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Windows.Forms;
 using HelloWorld_DascomPrinter.Properties;
-using IFRBDASCOM;
 using TfhkaNet.IF.DO;
 
 
@@ -11,82 +10,33 @@ namespace HelloWorld_DascomPrinter
 {
     public partial class Form1 : Form
     {
-        private IFRB _iFrb;
         private Tfhka _tfhka;
-        private string result;
-        private int ok;
-        private float puerto, lbaudios;
+        private int lbaudios;
+        private string puerto;
         string[] precio = new string[2] { "00000000", "00" };
         string[] cantidad = new string[2] { "00000", "000" };
         private string[] desc = new string[2] { "00", "00" };
-        // Dim precio As String() = New String() {ENTERO_PRECIO, DECIMAL_PRECIO}
-        //Dim cantidad As String() = New String() {ENTERO_CANTIDAD, DECIMAL_CANTIDAD}
-        //Dim desc As String() = New String() {ENTERO_DESCUENTO, DECIMAL_DESCUENTO}
 
         public Form1()
         {
             InitializeComponent();
-            _iFrb = new IFRB();
             _tfhka = new Tfhka();
-            puerto = 1;
+            puerto = "COM3";
             lbaudios = 9600;
-        }
 
-        private void button1_Click(object sender, EventArgs e)
-        {
-            short result = _iFrb.abrirpuerto(puerto, lbaudios);
-            if (true)
-            {
-                //MessageBox.Show("Se conectó correctamente");
-                //_iFrb.cmd0e02(puerto, lbaudios, "Prueba texto", "800");
-                //_iFrb.cmd0e06(puerto, lbaudios);
-                short tipo = 0;
-                string ncf = "1234567890123456789";
-                string rs = "sustantivo";
-                string rnc = "40220097683";
-                string vacio = "";
-                float v = 0;
-                //_iFrb.cmd0a07(puerto, lbaudios);
-                string _result = _iFrb.cmd0a01(ref tipo, ref vacio, ref vacio, ref vacio, ref vacio, ref ncf, rs, ref rnc, ref vacio,
-                    ref v, ref v);
-            }
-            else
-            {
-                MessageBox.Show("No se pudo abrir el puerto");
-            }
-        }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            result = _iFrb.cmd0a02("0", "Cafe", "", "", "", "", "", "", "", "", "", 1, 60, 1, "111111", "unidad", "111111");
-        }
-
-        private void button3_Click(object sender, EventArgs e)
-        {
-            result = _iFrb.cmd0A05(1, 2000);
-        }
-
-        private void button4_Click(object sender, EventArgs e)
-        {
-            result = _iFrb.cmd0A06("descri 1", "descri 2", "descri 3");
-        }
-
-        private void button5_Click(object sender, EventArgs e)
-        {
-            short _a = _iFrb.abrirpuerto(puerto, lbaudios);
-            if (true)
-            {
-                MessageBox.Show(Resources.Form1_button5_Click_Se_conectó_correctamente);
-                result = _iFrb.cmd0a07();
-            }
-            else
-            {
-                result = _iFrb.cmd0a07();
-                MessageBox.Show(Resources.Form1_button5_Click_No_se_pudo_abrir_el_puerto);
-            }
+            /* Prueba impresión automática */
+            AbrirDocumentoTFHKA();
+            AgregarArticuloRFHKA();
+            AplicarPago();
+            CerrarDocumentoTFHKA();
         }
 
         private void button6_Click(object sender, EventArgs e)
+        {
+            AbrirDocumentoTFHKA();
+        }
+
+        private void AbrirDocumentoTFHKA()
         {
             try
             {
@@ -98,17 +48,17 @@ namespace HelloWorld_DascomPrinter
                 if (_tfhka.StatusPort)
                     _tfhka.CloseFpCtrl();
 
-                if (_tfhka.OpenFpCtrl("COM1", 9600))
+                if (_tfhka.OpenFpCtrl(puerto, lbaudios))
                 {
-                    //S1 = _tfhka.GetS1PrinterData();
+                    S1 = _tfhka.GetS1PrinterData();
                     S2 = _tfhka.GetS2PrinterData();
-                    //S3 = _tfhka.GetS3PrinterData();
+                    S3 = _tfhka.GetS3PrinterData();
 
                     if (S2.TypeDocument != 0)
                         _tfhka.SendCmd("7");
 
                     string ncf = "1234512345123455432"; // - ("F" + NCF)
-                    string ncfa; //NCFAfectado - ("iF0" + NCFA)
+                    //string ncfa; //NCFAfectado - ("iF0" + NCFA)
                     string rnc = "40220097683"; //RNC - ("iR0" + RNC)
                     string rs = "stark industries"; //RS - ("iS0" + RS)
 
@@ -124,28 +74,22 @@ namespace HelloWorld_DascomPrinter
             }
         }
 
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
-        }
-
-        private void button7_Click(object sender, EventArgs e)
-        {
-            short result = _iFrb.abrirpuerto(puerto, lbaudios);
-            string a = _iFrb.cmd0801();
-        }
-
         private void button8_Click(object sender, EventArgs e)
+        {
+            AgregarArticuloRFHKA();
+        }
+
+        private void AgregarArticuloRFHKA()
         {
             if (_tfhka.StatusPort)
                 _tfhka.CloseFpCtrl();
 
-            if (_tfhka.OpenFpCtrl("COM1", 9600))
+            if (_tfhka.OpenFpCtrl(puerto, lbaudios))
             {
-                double _precio = 300;
+                double _precio = 100;
                 int _cantidad = 1;
                 double _descuento = 0;
-                string descripcion = "Iron Suit Mark 3";
+                string descripcion = "Articulo de prueba";
                 string item;
                 string code = "A0001";
 
@@ -164,7 +108,7 @@ namespace HelloWorld_DascomPrinter
                 //!000000605000000300|A0001|Iron Suit Mark 3
                 //!000000080000005000
                 //!000000100000000300Fe Suit
-                item = "!";
+                item = "\"";
                 item += precio[0] + precio[1] + cantidad[0] + cantidad[1] + "|" + code + "||" + descripcion;
                 bool a = _tfhka.SendCmd(item);
                 string descItem = "p-" + desc[0] + desc[1];
@@ -175,12 +119,17 @@ namespace HelloWorld_DascomPrinter
 
         private void button9_Click(object sender, EventArgs e)
         {
+            AplicarPago();
+        }
+
+        private void AplicarPago()
+        {
             if (_tfhka.StatusPort)
                 _tfhka.CloseFpCtrl();
 
-            if (_tfhka.OpenFpCtrl("COM1", 9600))
+            if (_tfhka.OpenFpCtrl(puerto, lbaudios))
             {
-                double _pago = 20;
+                double _pago = 35;
                 string pagoParcial;
                 bool isOk;
                 //bool od = _tfhka.SendCmd("101");
@@ -203,10 +152,15 @@ namespace HelloWorld_DascomPrinter
 
         private void button10_Click(object sender, EventArgs e)
         {
+            CerrarDocumentoTFHKA();
+        }
+
+        private void CerrarDocumentoTFHKA()
+        {
             if (_tfhka.StatusPort)
                 _tfhka.CloseFpCtrl();
 
-            if (_tfhka.OpenFpCtrl("COM1", 9600))
+            if (_tfhka.OpenFpCtrl(puerto, lbaudios))
             {
                 bool od = _tfhka.SendCmd("199");
             }
@@ -217,7 +171,7 @@ namespace HelloWorld_DascomPrinter
             if (_tfhka.StatusPort)
                 _tfhka.CloseFpCtrl();
 
-            if (_tfhka.OpenFpCtrl("COM1", 9600))
+            if (_tfhka.OpenFpCtrl(puerto, lbaudios))
             {
                 _tfhka.SendCmd("7");
                 _tfhka.CloseFpCtrl();
@@ -229,7 +183,7 @@ namespace HelloWorld_DascomPrinter
             if (_tfhka.StatusPort)
                 _tfhka.CloseFpCtrl();
 
-            if (_tfhka.OpenFpCtrl("COM1", 9600))
+            if (_tfhka.OpenFpCtrl(puerto, lbaudios))
             {
                 _tfhka.PrintZReport();
             }
@@ -240,7 +194,7 @@ namespace HelloWorld_DascomPrinter
             if (_tfhka.StatusPort)
                 _tfhka.CloseFpCtrl();
 
-            if (_tfhka.OpenFpCtrl("COM1", 9600))
+            if (_tfhka.OpenFpCtrl(puerto, lbaudios))
             {
                 double _desc = 10.45;
                 string descuento;
